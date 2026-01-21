@@ -1,10 +1,15 @@
 package com.bloom.app.ui.screens.camera
 
-import androidx.compose.material3.Text
+
+import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+
 
 @Composable
 fun CameraScreen(navController: NavController) {
-    Text(text = "Camera Screen - Bloom 🌱")
+    AndroidView(factory = { context ->
+        PreviewView(context)
+    })
 }

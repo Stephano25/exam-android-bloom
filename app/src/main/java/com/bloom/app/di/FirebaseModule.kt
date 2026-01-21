@@ -1,6 +1,6 @@
 package com.bloom.app.di
 
-import com.bloom.app.data.repository.PlantRepository
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -11,7 +11,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+object FirebaseModule {
 
 
     @Provides
@@ -19,12 +19,7 @@ object AppModule {
     fun provideAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
-
-
-    @Provides @Singleton
-    fun providePlantRepository(
-        firestore: FirebaseFirestore
-    ): PlantRepository = PlantRepository(firestore)
 }
