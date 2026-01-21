@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.bloom.app.navigation.Screen
+import com.bloom.app.result.ResultScreen
 import com.bloom.app.ui.screens.camera.CameraScreen
 import com.bloom.app.ui.theme.BloomTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,15 +23,12 @@ class MainActivity : ComponentActivity() {
             BloomTheme {
                 val navController = rememberNavController()
 
-                NavHost(
-                    navController = navController,
-                    startDestination = Screen.Camera.route
-                ) {
-                    composable(Screen.Camera.route) {
-                        CameraScreen(navController)
-                    }
+                NavHost(navController, startDestination = Screen.Camera.route) {
+                    composable(Screen.Camera.route) { CameraScreen(navController) }
+                    composable(Screen.Result.route) { ResultScreen() }
                 }
             }
         }
     }
 }
+
