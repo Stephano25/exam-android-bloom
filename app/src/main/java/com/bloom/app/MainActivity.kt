@@ -7,28 +7,26 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
 import com.bloom.app.navigation.Screen
 import com.bloom.app.result.ResultScreen
-import com.bloom.app.ui.screens.camera.CameraScreen
-import com.bloom.app.ui.theme.BloomTheme
-import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
-            BloomTheme {
-                val navController = rememberNavController()
+            val navController = rememberNavController()
 
-                NavHost(navController, startDestination = Screen.Camera.route) {
-                    composable(Screen.Camera.route) { CameraScreen(navController) }
-                    composable(Screen.Result.route) { ResultScreen() }
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Result.route // temporaire
+            ) {
+                composable(Screen.Result.route) {
+                    ResultScreen()
                 }
             }
         }
     }
 }
-

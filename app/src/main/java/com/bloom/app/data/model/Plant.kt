@@ -1,6 +1,5 @@
 package com.bloom.app.data.model
 
-
 data class Plant(
     val commonName: String = "",
     val scientificName: String = "",
