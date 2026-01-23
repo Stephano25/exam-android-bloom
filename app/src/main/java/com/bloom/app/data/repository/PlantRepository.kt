@@ -12,26 +12,19 @@ class PlantRepository @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth
 ) {
-
     fun savePlant(plant: Plant) {
-        val userId = auth.currentUser?.uid ?: return
-        firestore.collection("users")
-            .document(userId)
-            .collection("plants")
-            .add(plant)
+        val uid = auth.currentUser?.uid ?: return
+        firestore.collection("users").document(uid)
+            .collection("plants").add(plant)
     }
 
     fun getPlants(): Flow<List<Plant>> = callbackFlow {
-        val userId = auth.currentUser?.uid ?: return@callbackFlow
-
-        val listener = firestore.collection("users")
-            .document(userId)
+        val uid = auth.currentUser?.uid ?: return@callbackFlow
+        val sub = firestore.collection("users").document(uid)
             .collection("plants")
-            .addSnapshotListener { snapshot, _ ->
-                val plants = snapshot?.toObjects(Plant::class.java) ?: emptyList()
-                trySend(plants)
+            .addSnapshotListener { s, _ ->
+                trySend(s?.toObjects(Plant::class.java) ?: emptyList())
             }
-
-        awaitClose { listener.remove() }
+        awaitClose { sub.remove() }
     }
 }

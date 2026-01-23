@@ -1,8 +1,8 @@
 package com.bloom.app.result
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,29 +21,35 @@ fun ResultScreen(
 
     LaunchedEffect(uri) {
         uri?.let {
-            val bytes = context.contentResolver
+            context.contentResolver
                 .openInputStream(it)
                 ?.readBytes()
-
-            bytes?.let { image ->
-                resultViewModel.analyze(image)
-            }
+                ?.let { bytes ->
+                    resultViewModel.analyze(bytes)
+                }
         }
     }
 
-    plant?.let {
-        Column(
+    plant?.let { plant ->
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(20.dp),
+            elevation = CardDefaults.cardElevation(6.dp)
         ) {
-            Text(
-                text = it.commonName,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Text(text = it.scientificName)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = it.description)
+            Column(Modifier.padding(16.dp)) {
+                Text(
+                    plant.commonName,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Text(
+                    plant.scientificName,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(plant.description)
+            }
         }
     }
 }

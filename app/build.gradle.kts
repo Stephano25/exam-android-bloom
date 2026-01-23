@@ -7,7 +7,9 @@ plugins {
 }
 
 android {
+
     namespace = "com.bloom.app"
+
     compileSdk = 34
 
     defaultConfig {
@@ -20,10 +22,16 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.4"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
@@ -31,42 +39,61 @@ android {
     }
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 dependencies {
 
-    // UI - Compose
-    implementation("androidx.compose.ui:ui:1.6.0")
-    implementation("androidx.compose.material3:material3:1.2.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation("androidx.navigation:navigation-compose:2.7.6")
+    // =============================
+    // Compose BOM (VERSION VALIDE)
+    // =============================
+    implementation(platform("androidx.compose:compose-bom:2024.10.01"))
 
-    // Lifecycle / ViewModel
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.0")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.activity:activity-compose")
+    implementation("androidx.navigation:navigation-compose")
 
+    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // =============================
+    // Lifecycle
+    // =============================
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.4")
+
+    // =============================
     // Hilt
+    // =============================
     implementation("com.google.dagger:hilt-android:2.50")
     kapt("com.google.dagger:hilt-compiler:2.50")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    // =============================
+    // Firebase (BOM OFFICIEL)
+    // =============================
+    implementation(platform("com.google.firebase:firebase-bom:33.2.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-storage")
 
+    // =============================
     // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:21.0.0")
-    
+    // =============================
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+    // =============================
     // CameraX
-    implementation("androidx.camera:camera-camera2:1.3.1")
-    implementation("androidx.camera:camera-lifecycle:1.3.1")
-    implementation("androidx.camera:camera-view:1.3.1")
+    // =============================
+    implementation("androidx.camera:camera-camera2:1.3.4")
+    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    implementation("androidx.camera:camera-view:1.3.4")
 
+    // =============================
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-    // Debug / Preview
-    implementation("androidx.compose.ui:ui-tooling-preview:1.6.0")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.6.0")
+    // =============================
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    //material
+    implementation("com.google.android.material:material:1.12.0")
 }
-

@@ -18,17 +18,19 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
 
     Column(Modifier.padding(16.dp)) {
-        TextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
-        TextField(value = password, onValueChange = { password = it }, label = { Text("Password") })
-
-        Button(
-            onClick = {
-                vm.login(email, password) {
-                    if (it) navController.navigate(Screen.Camera.route)
-                }
+        TextField(email, { email = it }, label = { Text("Email") })
+        TextField(password, { password = it }, label = { Text("Password") })
+        Button(onClick = {
+            vm.login(email, password) {
+                if (it) navController.navigate(Screen.Camera.route)
             }
-        ) {
-            Text("Login")
+        }) { Text("Login") }
+        Button(onClick = {
+            // à connecter avec ActivityResultLauncher
+        }) {
+            Text("Continuer avec Google")
         }
+
     }
 }
+

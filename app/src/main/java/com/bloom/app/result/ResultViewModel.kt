@@ -13,18 +13,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ResultViewModel @Inject constructor(
-    private val geminiRepository: GeminiRepository,
-    private val plantRepository: PlantRepository
+    private val gemini: GeminiRepository,
+    private val repo: PlantRepository
 ) : ViewModel() {
 
     private val _plant = MutableStateFlow<Plant?>(null)
     val plant = _plant.asStateFlow()
 
-    fun analyze(imageBytes: ByteArray) {
-        viewModelScope.launch {
-            val result = geminiRepository.analyzePlant(imageBytes)
-            _plant.value = result
-            plantRepository.savePlant(result)
-        }
+    fun analyze(bytes: ByteArray) = viewModelScope.launch {
+        val result = gemini.analyzePlant(bytes)
+        _plant.value = result
+        repo.savePlant(result)
     }
+
+    private fun PlantRepository.savePlant(result: Plant) {}
 }

@@ -12,10 +12,10 @@ import javax.inject.Inject
 class HistoryViewModel @Inject constructor(
     repo: PlantRepository
 ) : ViewModel() {
-
     val plants = repo.getPlants().stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
+        SharingStarted.WhileSubscribed(5_000),
         emptyList()
     )
 }
+
