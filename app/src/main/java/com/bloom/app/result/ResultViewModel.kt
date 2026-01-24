@@ -16,15 +16,19 @@ class ResultViewModel @Inject constructor(
     private val gemini: GeminiRepository,
     private val repo: PlantRepository
 ) : ViewModel() {
-
     private val _plant = MutableStateFlow<Plant?>(null)
     val plant = _plant.asStateFlow()
 
     fun analyze(bytes: ByteArray) = viewModelScope.launch {
-        val result = gemini.analyzePlant(bytes)
-        _plant.value = result
-        repo.savePlant(result)
+        try {
+            val result = gemini.analyzePlant(bytes)
+            if (result != null) {
+                _plant.value = result
+                repo.savePlant(result)   // ✅ maintenant c’est bien un Plant
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    private fun PlantRepository.savePlant(result: Plant) {}
 }

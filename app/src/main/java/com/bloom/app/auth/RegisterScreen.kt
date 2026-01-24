@@ -10,7 +10,7 @@ import androidx.navigation.NavController
 import com.bloom.app.navigation.Screen
 
 @Composable
-fun LoginScreen(
+fun RegisterScreen(
     navController: NavController,
     vm: AuthViewModel = hiltViewModel()
 ) {
@@ -31,21 +31,15 @@ fun LoginScreen(
         )
         Spacer(Modifier.height(16.dp))
         Button(onClick = {
-            vm.login(email, password) {
+            vm.register(email, password) {
                 if (it) navController.navigate(Screen.Camera.route)
             }
         }) {
-            Text("Login")
+            Text("Register")
         }
         Spacer(Modifier.height(8.dp))
-        Button(onClick = {
-            // à connecter avec ActivityResultLauncher pour Google Sign-In
-        }) {
-            Text("Continuer avec Google")
-        }
-        Spacer(Modifier.height(8.dp))
-        Button(onClick = { navController.navigate(Screen.Register.route) }) {
-            Text("Créer un compte")
+        Button(onClick = { navController.navigate(Screen.Login.route) }) {
+            Text("Déjà un compte ? Se connecter")
         }
     }
 }

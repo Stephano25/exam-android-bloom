@@ -1,5 +1,6 @@
 package com.bloom.app.gemini
 
+import android.util.Base64
 import com.bloom.app.BuildConfig
 import com.bloom.app.data.model.Plant
 import com.bloom.app.utils.plantPrompt
@@ -8,14 +9,12 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
-import android.util.Base64
 import javax.inject.Inject
 
 class GeminiRepository @Inject constructor() {
 
-    suspend fun analyzePlant(imageBytes: ByteArray): Plant =
+    suspend fun analyzePlant(imageBytes: ByteArray): Plant? =
         withContext(Dispatchers.IO) {
-
             val base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP)
 
             val body = """
@@ -46,35 +45,39 @@ class GeminiRepository @Inject constructor() {
                 doOutput = true
             }
 
-            conn.outputStream.use {
-                it.write(body.toByteArray())
+            return@withContext try {
+                conn.outputStream.use { it.write(body.toByteArray()) }
+
+                val response = conn.inputStream.bufferedReader().readText()
+                conn.disconnect()
+
+                val root = JSONObject(response)
+
+                val textJson = root
+                    .getJSONArray("candidates")
+                    .getJSONObject(0)
+                    .getJSONObject("content")
+                    .getJSONArray("parts")
+                    .getJSONObject(0)
+                    .getString("text")
+
+                val plantJson = JSONObject(textJson)
+
+                Plant(
+                    commonName = plantJson.optString("commonName", ""),
+                    scientificName = plantJson.optString("scientificName", ""),
+                    family = plantJson.optString("family", ""),
+                    description = plantJson.optString("description", ""),
+                    waterNeeds = plantJson.optString("waterNeeds", ""),
+                    lightNeeds = plantJson.optString("lightNeeds", ""),
+                    soilType = plantJson.optString("soilType", ""),
+                    careTips = plantJson.optString("careTips", ""),
+                    diseases = plantJson.optString("diseases", ""),
+                    toxicity = plantJson.optString("toxicity", "")
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
-
-            val response = conn.inputStream.bufferedReader().readText()
-
-            val root = JSONObject(response)
-
-            val textJson = root
-                .getJSONArray("candidates")
-                .getJSONObject(0)
-                .getJSONObject("content")
-                .getJSONArray("parts")
-                .getJSONObject(0)
-                .getString("text")
-
-            val plantJson = JSONObject(textJson)
-
-            Plant(
-                commonName = plantJson.getString("commonName"),
-                scientificName = plantJson.getString("scientificName"),
-                family = plantJson.getString("family"),
-                description = plantJson.getString("description"),
-                waterNeeds = plantJson.getString("waterNeeds"),
-                lightNeeds = plantJson.getString("lightNeeds"),
-                soilType = plantJson.getString("soilType"),
-                careTips = plantJson.getString("careTips"),
-                diseases = plantJson.getString("diseases"),
-                toxicity = plantJson.getString("toxicity")
-            )
         }
 }
