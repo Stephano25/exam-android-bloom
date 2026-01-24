@@ -11,7 +11,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.bloom.app.ui.camera.CameraViewModel
 import com.bloom.app.data.model.Plant
 import androidx.compose.ui.Alignment
-import com.bloom.app.result.ResultViewModel
+
 @Composable
 fun ResultScreen(
     cameraViewModel: CameraViewModel = hiltViewModel(),
@@ -20,7 +20,6 @@ fun ResultScreen(
     val context = LocalContext.current
     val uri by cameraViewModel.photoUri.collectAsState()
     val plant by resultViewModel.plant.collectAsState()
-    val resultViewModel: ResultViewModel = hiltViewModel()
 
     // ⚡ Lancer l'analyse quand une photo est disponible
     LaunchedEffect(uri) {
@@ -70,6 +69,7 @@ fun ResultScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text("Aucune analyse disponible")
+                CircularProgressIndicator()
             }
         }
     }
