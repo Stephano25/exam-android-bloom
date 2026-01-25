@@ -25,8 +25,19 @@ class MainActivity : ComponentActivity() {
                 navController = navController,
                 startDestination = Screen.Login.route
             ) {
-                composable(Screen.Login.route) { LoginScreen(navController) }
-                composable(Screen.Register.route) { RegisterScreen(navController) }
+                // ✅ Login → Register navigation
+                composable(Screen.Login.route) {
+                    LoginScreen(onNavigateRegister = {
+                        navController.navigate(Screen.Register.route)
+                    })
+                }
+                composable(Screen.Register.route) {
+                    RegisterScreen(onNavigateLogin = {
+                        navController.navigate(Screen.Login.route)
+                    })
+                }
+
+                // ✅ autres écrans
                 composable(Screen.Camera.route) { CameraScreen(navController) }
                 composable(Screen.Result.route) { ResultScreen() }
                 composable(Screen.History.route) { HistoryScreen() }

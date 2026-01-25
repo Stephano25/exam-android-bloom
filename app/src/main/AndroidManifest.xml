@@ -3,6 +3,7 @@
 
     <application
         android:name=".BloomApp"
+        android:icon="@drawable/ic_leaf"
         android:label="Bloom"
         android:theme="@style/Theme.Bloom">
 
