@@ -1,36 +1,48 @@
 package com.bloom.app.auth
 
 import android.content.Context
-import android.content.Intent
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.GetCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.tasks.await
 
 class GoogleAuthUiClient(
-    context: Context,
+    private val context: Context,
     private val auth: FirebaseAuth
 ) {
-    private val oneTapClient: SignInClient = Identity.getSignInClient(context)
+    private val credentialManager: CredentialManager = CredentialManager.create(context)
 
-    fun signInRequest(clientId: String): BeginSignInRequest =
-        BeginSignInRequest.builder()
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    .setServerClientId(clientId)
-                    .setFilterByAuthorizedAccounts(false)
-                    .build()
-            )
-            .build()
+    suspend fun signIn(clientId: String, onResult: (Boolean) -> Unit) {
+        try {
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setServerClientId(clientId)
+                .build()
 
-    fun signInWithIntent(intent: Intent, onResult: (Boolean) -> Unit) {
-        val credential = oneTapClient.getSignInCredentialFromIntent(intent)
-        val idToken = credential.googleIdToken ?: return onResult(false)
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
 
-        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(firebaseCredential)
-            .addOnCompleteListener { onResult(it.isSuccessful) }
+            val response: GetCredentialResponse = credentialManager.getCredential(context, request)
+
+            // ✅ Récupération correcte du token
+            val googleCredential = GoogleIdTokenCredential.createFrom(response.credential.data)
+            val idToken: String? = googleCredential.idToken
+
+            if (idToken != null) {
+                val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+                val result = auth.signInWithCredential(firebaseCredential).await()
+                onResult(result.user != null)
+            } else {
+                onResult(false)
+            }
+        } catch (e: GetCredentialException) {
+            e.printStackTrace()
+            onResult(false)
+        }
     }
 }
