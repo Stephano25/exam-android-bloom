@@ -3,44 +3,93 @@ package com.bloom.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.bloom.app.auth.LoginScreen
-import com.bloom.app.auth.RegisterScreen
-import com.bloom.app.history.HistoryScreen
-import com.bloom.app.navigation.Screen
-import com.bloom.app.result.ResultScreen
-import com.bloom.app.ui.camera.CameraScreen
-import dagger.hilt.android.AndroidEntryPoint
+import com.bloom.app.data.local.database.AppDatabase
+import com.bloom.app.data.repository.AuthRepository
+import com.bloom.app.data.repository.DiscoveryRepository
+import com.bloom.app.ui.navigation.AppNavGraph
+import com.bloom.app.ui.theme.PlantDiscoveryJournalTheme
+import com.bloom.app.ui.viewmodel.AuthState
+import com.bloom.app.ui.viewmodel.AuthViewModel
+import com.bloom.app.ui.viewmodel.CaptureViewModel
+import com.bloom.app.ui.viewmodel.DetailViewModel
+import com.bloom.app.ui.viewmodel.JournalViewModel
+import com.bloom.app.ui.viewmodel.ThemeViewModel
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private lateinit var authRepository: AuthRepository
+    private lateinit var discoveryRepository: DiscoveryRepository
+
+    private lateinit var authViewModel: AuthViewModel
+    private lateinit var themeViewModel: ThemeViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val database = AppDatabase.getDatabase(applicationContext)
+        authRepository = AuthRepository()
+        discoveryRepository = DiscoveryRepository(
+            discoveryDao = database.discoveryDao(),
+            context = applicationContext
+        )
+
+        authViewModel = AuthViewModel(authRepository)
+        themeViewModel = ThemeViewModel()
+
         setContent {
+            val isDark = themeViewModel.isDarkTheme.collectAsState().value
+            val authState = authViewModel.authState.collectAsState().value
+
             val navController = rememberNavController()
 
-            NavHost(
-                navController = navController,
-                startDestination = Screen.Login.route
-            ) {
-                // ✅ Login → Register navigation
-                composable(Screen.Login.route) {
-                    LoginScreen(onNavigateRegister = {
-                        navController.navigate(Screen.Register.route)
-                    })
+            // Choix de l’écran de départ selon l’état d’authentification
+            LaunchedEffect(authState) {
+                when (authState) {
+                    is AuthState.Authenticated -> {
+                        // Aller vers le journal et retirer les écrans d’authentification de la backstack
+                        navController.navigate("journal") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+                    AuthState.Unauthenticated -> {
+                        // Aller vers l’écran de login
+                        navController.navigate("login") {
+                            popUpTo(0)
+                        }
+                    }
+                    is AuthState.Error -> {
+                        // Ne pas quitter l’app, l’erreur est gérée dans les écrans Login/SignUp
+                    }
                 }
-                composable(Screen.Register.route) {
-                    RegisterScreen(onNavigateLogin = {
-                        navController.navigate(Screen.Login.route)
-                    })
-                }
+            }
 
-                // ✅ autres écrans
-                composable(Screen.Camera.route) { CameraScreen(navController) }
-                composable(Screen.Result.route) { ResultScreen() }
-                composable(Screen.History.route) { HistoryScreen() }
+            PlantDiscoveryJournalTheme(darkTheme = isDark) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavGraph(
+                        navController = navController,
+                        authViewModel = authViewModel,
+                        themeViewModel = themeViewModel,
+                        getJournalViewModel = { userId ->
+                            JournalViewModel(discoveryRepository, userId)
+                        },
+                        getCaptureViewModel = { userId ->
+                            CaptureViewModel(discoveryRepository, userId)
+                        },
+                        getDetailViewModel = { discoveryId ->
+                            DetailViewModel(discoveryRepository, discoveryId)
+                        }
+                    )
+                }
             }
         }
     }
